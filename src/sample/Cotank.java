@@ -1,19 +1,19 @@
 package sample;
 
 import javafx.animation.AnimationTimer;
-import javafx.fxml.FXML;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Circle;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * @author Oleg Shatin
  *         11-501
  */
 public class Cotank {
+    private boolean isMoving;
+    private AnimationTimer currentMoveTimer;
 
     public ImageView getView() {
         return view;
@@ -27,28 +27,35 @@ public class Cotank {
         this.gameField = gameField;
     }
 
-    public void move(int deltaX, int deltaY){
+    public void move(double newX, double newY) {
         if (gameField.getChildren().contains(view)) {
+            double deltaX = newX - view.getX()- view.getLayoutX();
+            double deltaY = newY - view.getY() - view.getLayoutY();
             final double DISTANCE = 20;
-            double rateX = (double) deltaX / DISTANCE;
-            double rateY = (double) deltaY / DISTANCE;
-            new AnimationTimer() {
-                int i = 0;
+            double rateX = deltaX / DISTANCE;
+            double rateY = deltaY / DISTANCE;
+            if (currentMoveTimer != null) {
+                currentMoveTimer.stop();
+            }
+            currentMoveTimer = new AnimationTimer() {
+                        int i = 0;
+                        @Override
+                        public void handle(long now) {
+                            if (i < DISTANCE) {
+                                view.setX(view.getX() + rateX);
+                                view.setY(view.getY() + rateY);
+                                i++;
+                            } else {
+                                this.stop();
+                            }
+                        }
+                    };
+            currentMoveTimer.start();
 
-                @Override
-                public void handle(long now) {
-                    if (i < DISTANCE) {
-                        view.setX(view.getX() + rateX);
-                        view.setY(view.getY() + rateY);
-                        i++;
-                    } else {
-                        this.stop();
-                    }
-                }
-            }.start();
         }
     }
-    public void shoot(Collection<Cotank> targets){
+
+    public void shoot(Collection<Cotank> targets) {
         if (gameField.getChildren().contains(view)) {
             Circle c = new Circle(view.getScaleX() > 0 ? view.getX() + view.getLayoutX() : view.getX() + view.getLayoutX() + view.getFitWidth(),
                     view.getLayoutY() + view.getY(), 10);
